@@ -246,19 +246,32 @@
     workflow(scene) { // ring of 8 stations, a ticket chip orbits through them
       const g = new THREE.Group(); scene.add(g); const R = 3.2;
       for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2; const m = new THREE.Mesh(rbox(.8, .8, .3, .14), mat(i % 2 ? C.ink : C.white)); m.position.set(Math.cos(a) * R, 0, Math.sin(a) * R); m.lookAt(0, 0, 0); g.add(m);
-        const n = new THREE.Mesh(new THREE.PlaneGeometry(.6, .6), new THREE.MeshBasicMaterial({ map: tex(128, 128, (c, w, h) => { c.fillStyle = i % 2 ? '#17242d' : '#fff'; c.fillRect(0, 0, w, h); c.fillStyle = '#f66b13'; c.font = F(64, 800); c.textAlign = 'center'; c.fillText('0' + (i + 1), w / 2, 86); }), toneMapped: false })); n.position.copy(m.position).multiplyScalar(.94); n.lookAt(0, 0, 0); n.rotateY(Math.PI); g.add(n); }
+        const n = new THREE.Mesh(new THREE.PlaneGeometry(.6, .6), new THREE.MeshBasicMaterial({ map: tex(128, 128, (c, w, h) => { c.fillStyle = i % 2 ? '#17242d' : '#fff'; c.fillRect(0, 0, w, h); c.fillStyle = '#f66b13'; c.font = F(64, 800); c.textAlign = 'center'; c.fillText('0' + (i + 1), w / 2, 86); }), toneMapped: false })); n.material.side = THREE.DoubleSide; n.position.copy(m.position).multiplyScalar(.94); n.lookAt(0, 0, 0); g.add(n); const n2 = n.clone(); n2.position.copy(m.position).multiplyScalar(1.06); n2.lookAt(0, 0, 0); n2.rotateY(Math.PI); g.add(n2); }
       const track = new THREE.Mesh(new THREE.TorusGeometry(R, .03, 8, 120), mat(C.orange)); track.rotation.x = Math.PI / 2; g.add(track);
       const runner = new THREE.Mesh(new THREE.SphereGeometry(.22, 32, 32), mat(C.orange, { emissive: C.orange, emissiveIntensity: .4 })); g.add(runner);
       const center = plate(1.1); center.position.y = -.2; g.add(center);
       return { cam: [0, 4.2, 8.2], look: [0, -.3, 0], objs: [g], tick(t) { const a = t * .55; runner.position.set(Math.cos(a) * R, .55 + Math.abs(Math.sin(a * 4)) * .25, Math.sin(a) * R); g.rotation.y = Math.sin(t * .15) * .3; } };
     },
-    restaurants(scene) { // a little floor: tables, bar, counter
+    restaurants(scene) { // small restaurant diorama: tables + chairs, bar + stools, pendant lamps
       const g = new THREE.Group(); scene.add(g);
-      const floor = new THREE.Mesh(new THREE.CircleGeometry(6, 64), mat(0xefe9de, { roughness: 1 })); floor.rotation.x = -Math.PI / 2; g.add(floor);
-      [[-2.4, -1], [0, -2.2], [2.4, -1], [-1.2, 1.4], [1.4, 1.4]].forEach(([x, z], i) => { const t = table(i % 2 ? 0xf2e5d8 : C.white); t.position.set(x, 0, z); t.scale.setScalar(.75); g.add(t); });
-      const bar = new THREE.Mesh(rbox(4, 1.1, .7, .12), mat(C.ink)); bar.rotation.x = -Math.PI / 2; bar.position.set(0, .6, -4); bar.rotation.set(0, 0, 0); g.add(bar);
-      const glow = new THREE.Mesh(new THREE.BoxGeometry(4.1, .06, .8), mat(C.orange, { emissive: C.orange, emissiveIntensity: .5 })); glow.position.set(0, 1.18, -4); g.add(glow);
-      return { cam: [0, 6.5, 9], look: [0, 0, -.6], objs: [g], tick(t) { g.rotation.y = Math.sin(t * .2) * .35; } };
+      const base = new THREE.Mesh(rbox(9.2, 6.4, .5, .45), mat(0xd8c5a8, { roughness: 1 })); base.rotation.x = -Math.PI / 2; base.position.y = -.28; g.add(base);
+      const rug = new THREE.Mesh(new THREE.PlaneGeometry(6.4, 3.4), mat(0xf6efe3, { roughness: 1 })); rug.rotation.x = -Math.PI / 2; rug.position.set(0, .01, .5); g.add(rug);
+      const lamps = [];
+      function chair(x, z, face) { const c = new THREE.Group(); const seat = new THREE.Mesh(new THREE.BoxGeometry(.36, .06, .36), mat(C.ink)); seat.position.y = .34; const back = new THREE.Mesh(new THREE.BoxGeometry(.36, .36, .05), mat(C.orange)); back.position.set(0, .56, -.17); const legs = new THREE.Mesh(new THREE.BoxGeometry(.28, .32, .28), mat(0x2e3f49)); legs.position.y = .16; c.add(seat, back, legs); c.position.set(x, 0, z); c.rotation.y = face; g.add(c); }
+      [[-2.6, .5], [0, 1.4], [2.6, .5]].forEach(([x, z], i) => {
+        const t = table(i === 1 ? 0xf2e5d8 : C.white); t.scale.setScalar(.62); t.position.set(x, 0, z); g.add(t);
+        [0, 1, 2, 3].forEach(k => { const a = k * Math.PI / 2 + .4; chair(x + Math.sin(a) * .98, z + Math.cos(a) * .98, a + Math.PI); });
+        const lamp = new THREE.Group(); lamp.position.set(x, 3, z);
+        const cord = new THREE.Mesh(new THREE.CylinderGeometry(.01, .01, 1.4, 6), mat(C.ink)); cord.position.y = .7;
+        const shade = new THREE.Mesh(new THREE.ConeGeometry(.42, .34, 32, 1, true), new THREE.MeshStandardMaterial({ color: C.orange, side: THREE.DoubleSide, roughness: .5 })); shade.position.y = -.05;
+        const bulb = new THREE.Mesh(new THREE.SphereGeometry(.12, 16, 16), new THREE.MeshBasicMaterial({ color: 0xffe3b0 })); bulb.position.y = -.08;
+        lamp.add(cord, shade, bulb); g.add(lamp); lamps.push(lamp);
+      });
+      const bar = new THREE.Mesh(new THREE.BoxGeometry(4.4, .95, .7), mat(C.ink)); bar.position.set(0, .475, -2.4); g.add(bar);
+      const top = new THREE.Mesh(new THREE.BoxGeometry(4.6, .08, .85), mat(C.white)); top.position.set(0, .99, -2.4); g.add(top);
+      const glow = new THREE.Mesh(new THREE.BoxGeometry(4.3, .06, .04), new THREE.MeshBasicMaterial({ color: C.orange })); glow.position.set(0, .3, -2.03); g.add(glow);
+      for (let i = 0; i < 4; i++) { const s = new THREE.Group(); const seat = new THREE.Mesh(new THREE.CylinderGeometry(.2, .2, .07, 24), mat(C.orange)); seat.position.y = .66; const pole = new THREE.Mesh(new THREE.CylinderGeometry(.03, .03, .64, 8), mat(0x9aa5aa, { metalness: .6 })); pole.position.y = .32; s.add(seat, pole); s.position.set(-1.35 + i * .9, 0, -1.65); g.add(s); }
+      return { cam: [5.2, 5.4, 8.6], look: [0, 1, -.2], objs: [g], tick(t) { g.rotation.y = Math.sin(t * .25) * .45 - .15; lamps.forEach((l, i) => { l.rotation.z = Math.sin(t * .8 + i) * .04; }); } };
     },
     pricing(scene) { // terminal + floating receipt + coins
       const payT = tex(512, 320, drawPay); const term = new THREE.Group(); scene.add(term);

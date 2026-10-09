@@ -18,7 +18,7 @@ Optional local server (if Python is installed): run `python -m http.server 8000`
 - demo.html: Demo brief
 - style.css: Styling, responsive layouts and animations
 - app.js: Navigation and interactive features
-- nexplate-logo.png and nexplate-workflow.jpeg: Images
+- nexplate-logo.png: Logo
 
 ## Host on your own domain
 Upload the contents of this folder to your hosting provider's public website directory, keeping index.html at its root and preserving filenames. This is a static website; no Node.js server or database is required. Connect your domain using your hosting provider's instructions.

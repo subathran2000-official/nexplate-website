@@ -2,6 +2,7 @@
    Home (body.x3d): fixed full-screen canvas, camera travels through the order journey on scroll.
    Other pages (<canvas class="hero3d" data-scene="...">): a self-contained 3D hero. */
 (() => {
+  const WORD = new Image(); WORD.src = "nexplate-logo.png"; const texList = [];
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const hasGL = (() => { try { const c = document.createElement('canvas'); return !!(window.WebGLRenderingContext && (c.getContext('webgl') || c.getContext('experimental-webgl'))); } catch (e) { return false; } })();
   if (!window.THREE || !hasGL) { document.documentElement.classList.add('no3d'); return; }
@@ -16,9 +17,10 @@
     const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
     const ctx = cv.getContext('2d'); const t = new THREE.CanvasTexture(cv);
     t.anisotropy = 4; t.encoding = THREE.sRGBEncoding; t.userData = { cv, ctx, draw };
-    t.redraw = (...a) => { draw(ctx, w, h, ...a); t.needsUpdate = true; };
+    t.redraw = (...a) => { t.userData.last = a; draw(ctx, w, h, ...a); t.needsUpdate = true; }; texList.push(t);
     t.redraw(0); return t;
   }
+  WORD.onload = () => texList.forEach(t => t.redraw(...(t.userData.last || [0])));
   function rr(ctx, x, y, w, h, r, fill, stroke) {
     ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
     ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
@@ -30,7 +32,7 @@
   // POS screen: n = number of items added (0–4)
   function drawPOS(ctx, w, h, n = 0) {
     ctx.fillStyle = '#f3f3ef'; ctx.fillRect(0, 0, w, h);
-    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, 64); ctx.fillStyle = '#17242d'; ctx.font = F(26, 800); ctx.fillText('NEXPLATE', 28, 42);
+    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, 64); if (WORD.complete && WORD.naturalWidth) ctx.drawImage(WORD, 28, 16, 30 * 7.06, 30); else { ctx.fillStyle = '#17242d'; ctx.font = F(26, 800); ctx.fillText('NEXPLATE', 28, 42); }
     ctx.fillStyle = '#62776a'; ctx.font = F(18); ctx.fillText('● Table 08 · 2 guests', w - 250, 40);
     ctx.fillStyle = '#17242d'; ctx.font = F(30, 700); ctx.fillText('Let’s take an order.', 28, 118);
     const gw = (w - 360 - 28 * 2 - 16 * 2) / 3;
@@ -72,7 +74,7 @@
   }
   function drawReceipt(ctx, w, h) {
     ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h); ctx.textAlign = 'center';
-    ctx.fillStyle = '#f66b13'; ctx.font = F(40, 800); ctx.fillText('NEXPLATE', w / 2, 70);
+    if (WORD.complete && WORD.naturalWidth) ctx.drawImage(WORD, w / 2 - 150, 38, 300, 42.5); else { ctx.fillStyle = '#f66b13'; ctx.font = F(40, 800); ctx.fillText('NEXPLATE', w / 2, 70); }
     ctx.fillStyle = '#17242d'; ctx.font = F(18, 700); ctx.fillText('A LITTLE LESS CHAOS', w / 2, 108);
     ctx.font = F(38, 700); ctx.fillText('A lot more', w / 2, 170); ctx.fillText('hospitality.', w / 2, 214);
     ctx.textAlign = 'left'; ctx.font = F(22);

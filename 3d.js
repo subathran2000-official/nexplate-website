@@ -98,16 +98,22 @@
     g.translate(0, 0, -d / 2); return g;
   }
   const mat = (color, o = {}) => new THREE.MeshStandardMaterial(Object.assign({ color, roughness: .45, metalness: .05 }, o));
-  function device(w, h, texture, bodyColor = C.ink) {
+  function device(w, h, texture, bodyColor = 0x151c21) {
     const g = new THREE.Group();
-    const body = new THREE.Mesh(rbox(w, h, .14, .18), mat(bodyColor, { roughness: .3, metalness: .2 })); body.castShadow = true; g.add(body);
-    const screen = new THREE.Mesh(new THREE.PlaneGeometry(w - .22, h - .22), new THREE.MeshBasicMaterial({ map: texture, toneMapped: false }));
-    screen.position.z = .125; g.add(screen); g.userData.screen = screen; return g;
+    const body = new THREE.Mesh(rbox(w, h, .09, .24), mat(bodyColor, { roughness: .28, metalness: .35 })); body.castShadow = true; g.add(body);
+    const screen = new THREE.Mesh(new THREE.PlaneGeometry(w - .18, h - .18), new THREE.MeshBasicMaterial({ map: texture, toneMapped: false }));
+    screen.position.z = .096; g.add(screen); g.userData.screen = screen;
+    const cam = new THREE.Mesh(new THREE.CircleGeometry(.025, 16), new THREE.MeshBasicMaterial({ color: 0x3a4a54 })); cam.position.set(0, h / 2 - .045, .097); g.add(cam);
+    return g;
   }
-  function stand(group, y) {
-    const s = new THREE.Mesh(new THREE.CylinderGeometry(.06, .06, 1.2, 16), mat(0x9aa5aa, { metalness: .6, roughness: .3 })); s.position.set(0, y - .5, -.25); s.rotation.x = .15;
-    const b = new THREE.Mesh(new THREE.CylinderGeometry(.6, .7, .08, 40), mat(0x9aa5aa, { metalness: .6, roughness: .3 })); b.position.set(0, y - 1.1, -.35);
-    group.add(s, b);
+  // countertop tablet stand: flat base + angled rear support (h = tablet height)
+  function stand(group, h) {
+    const m = mat(0xb9c1c5, { metalness: .7, roughness: .25 });
+    const bottom = -h / 2, baseY = bottom - .72;
+    const base = new THREE.Mesh(rbox(1.9, .9, .07, .22), m); base.rotation.x = -Math.PI / 2; base.position.set(0, baseY, -.55); group.add(base);
+    const dz = .8, dy = (bottom + .35) - baseY, len = Math.hypot(dz, dy);
+    const arm = new THREE.Mesh(new THREE.BoxGeometry(.9, len, .07), m); arm.position.set(0, baseY + dy / 2, -.1 - dz / 2); arm.rotation.x = Math.atan(dz / dy); group.add(arm);
+    const lip = new THREE.Mesh(new THREE.BoxGeometry(1.6, .07, .22), m); lip.position.set(0, bottom - .05, .06); group.add(lip);
   }
   function plate(r = .7) {
     const g = new THREE.Group();
@@ -150,7 +156,7 @@
     const mobile = () => innerWidth < 700;
 
     const posTex = tex(1280, 800, drawPOS), kdsTex = tex(1280, 640, drawKDS), payTex = tex(512, 320, drawPay);
-    const pos = device(4.2, 2.65, posTex); stand(pos, -1.1); pos.position.set(0, 0, 0); scene.add(pos);
+    const pos = device(3.9, 2.5, posTex); stand(pos, 2.5); pos.position.set(0, 0, 0); scene.add(pos);
     const kds = device(4.6, 2.35, kdsTex, 0x0e171d); kds.position.set(8, .6, -3); kds.rotation.y = -.35; scene.add(kds);
     const term = new THREE.Group(); term.position.set(-9, -.6, 1.5); term.rotation.y = .45; scene.add(term);
     const tb = new THREE.Mesh(rbox(1.25, 2.1, .3, .16), mat(C.ink, { roughness: .3, metalness: .2 })); term.add(tb);

@@ -124,3 +124,6 @@ figcaption b{color:var(--ink)}
 .no3d .stage[data-stage="0"] .hero-fallback{position:static;height:auto;margin:16px auto 0;display:block;width:min(90%,560px)}
 .no3d .stage[data-stage="0"] .hero-fallback img{height:auto;width:100%}
 }
+
+/* full-bleed footer: an opaque band edge to edge so the fixed 3D canvas can never show through beside the content */
+.x3d footer.wrap{width:100%;max-width:none;margin:0;padding-left:max(5%,calc((100% - 1280px) / 2));padding-right:max(5%,calc((100% - 1280px) / 2));background:var(--paper);position:relative;z-index:1}

@@ -160,7 +160,7 @@ const boot = () => {
   }
   function makeRenderer(canvas) {
     const r = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
-    r.setPixelRatio(Math.min(devicePixelRatio, innerWidth < 700 ? 1.5 : 2)); r.setClearColor(0, 0); return r;
+    r.setPixelRatio(Math.min(devicePixelRatio, 2)); r.setClearColor(0, 0); return r;
   }
   const pointer = { x: 0, y: 0, sx: 0, sy: 0 };
   addEventListener('pointermove', e => { pointer.x = e.clientX / innerWidth * 2 - 1; pointer.y = e.clientY / innerHeight * 2 - 1; }, { passive: true });
@@ -172,7 +172,7 @@ const boot = () => {
     const canvas = document.getElementById('scene'); if (!canvas) return;
     const renderer = makeRenderer(canvas), scene = baseScene(renderer);
     const cam = new THREE.PerspectiveCamera(40, 1, .1, 100);
-    const mobile = () => innerWidth < 700;
+    const mobile = () => innerWidth < 1200; // stacked layout (3D strip above the text) for phones and tablets
 
     const posTex = tex(1280, 800, drawPOS), kdsTex = tex(1280, 640, drawKDS), billTex = tex(1280, 800, drawBill);
     const pos = device(3.9, 2.5, posTex); stand(pos, 2.5); pos.position.set(0, 0, 0); scene.add(pos);
@@ -259,7 +259,7 @@ const boot = () => {
       }
       renderer.render(scene, cam); requestAnimationFrame(frame);
     }
-    frame(); requestAnimationFrame(() => canvas.classList.add('ready'));
+    frame(); requestAnimationFrame(() => { canvas.classList.add('ready'); document.documentElement.classList.add('scene-ready'); });
   }
 
   /* ================= SUB-PAGES: 3D hero per page ================= */
@@ -344,10 +344,10 @@ const boot = () => {
   const c = navigator.connection || {};
   if (c.saveData || /(^|-)2g$/.test(c.effectiveType || "")) { document.documentElement.classList.add("no3d"); return; }
   const go = () => {
-    if (window.THREE) return boot();
+    if (window.THREE) { try { boot(); } catch (e) { document.documentElement.classList.add("no3d"); } return; }
     const s = document.createElement("script");
     s.src = "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"; s.integrity = "sha384-CI3ELBVUz9XQO+97x6nwMDPosPR5XvsxW2ua7N1Xeygeh1IxtgqtCkGfQY9WWdHu"; s.crossOrigin = "anonymous";
-    s.onload = boot; s.onerror = () => document.documentElement.classList.add("no3d");
+    s.onload = () => { try { boot(); } catch (e) { document.documentElement.classList.add("no3d"); } }; s.onerror = () => document.documentElement.classList.add("no3d");
     document.head.appendChild(s);
   };
   "requestIdleCallback" in window ? requestIdleCallback(go, { timeout: 1500 }) : setTimeout(go, 200);

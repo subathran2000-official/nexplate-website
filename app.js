@@ -29,3 +29,6 @@ const st=document.querySelector('#form-status');if(first){st.textContent='Please
 document.querySelector('#brief')?.setAttribute('novalidate','');
 
 document.querySelector('#brief button[type=submit]')?.removeAttribute('disabled');
+
+/* If the 3D scene has not drawn within 6s, show the static product visuals instead of leaving gaps. */
+setTimeout(()=>{const r=document.documentElement;if(document.getElementById('scene')&&!r.classList.contains('scene-ready'))r.classList.add('scene-late')},6000);
